@@ -1,0 +1,35 @@
+# TEST FIXTURE: simulates an image built OUTSIDE the trusted pipeline (no gate, no scan attestation).
+#   _ATTEST=none  -> pushed with no attestation at all
+#   _ATTEST=built -> signed as built-by-pipeline only (the gate was skipped)
+#   _ATTEST=scan  -> signed as scan-passed only (built elsewhere, claims to have passed the gate)
+substitutions:
+  _REPO: ""
+  _TAG: rogue
+  _ATTEST: none
+  _KMS_LOCATION: europe-west1
+  _KMS_KEYRING: ""
+  _KMS_VERSION: "1"
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: [build, --build-arg, "APP_VERSION=${_TAG}", -t, "${_REPO}/quote:${_TAG}", app]
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: [push, "${_REPO}/quote:${_TAG}"]
+  - id: attest
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -eu
+        case "${_ATTEST}" in built) A=built-by-pipeline;; scan) A=scan-passed;; *) A="";; esac
+        if [ -n "$$A" ]; then
+          DIGEST=$(gcloud artifacts docker images describe "${_REPO}/quote:${_TAG}" --format='get(image_summary.digest)')
+          gcloud beta container binauthz attestations sign-and-create \
+            --artifact-url="${_REPO}/quote@$$DIGEST" --attestor="$$A" --attestor-project="${PROJECT_ID}" \
+            --keyversion-project="${PROJECT_ID}" --keyversion-location="${_KMS_LOCATION}" \
+            --keyversion-keyring="${_KMS_KEYRING}" --keyversion-key="$$A" --keyversion="${_KMS_VERSION}"
+        fi
+options:
+  logging: CLOUD_LOGGING_ONLY

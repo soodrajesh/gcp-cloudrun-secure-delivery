@@ -1,0 +1,63 @@
+
+[1;34m==> Baseline: prod before the bad release[0m
+BASELINE {"200 v2-124026": 30}
+
+[1;34m==> 1/5 Build the faulty version (passes the vulnerability gate; it is a logic bug)[0m
+Creating temporary archive of 65 file(s) totalling 698.1 KiB before compression.
+Some files were not included in the source upload.
+
+Check the gcloud log [/Users/rajeshsood/.config/gcloud/logs/2026.09.27/12.55.14.514103.log] to see which files and the contents of the
+default gcloudignore file used (see `$ gcloud topic gcloudignore` to learn
+more).
+
+Uploading tarball of [.] to [gs://claude-code-507112-csd-ea506f/src/1790510114.641228-7a26e5aa10c94a30a440a732f00fd6bb.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/claude-code-507112/locations/europe-west1/builds/55426d5c-262c-4498-8155-7bee2b9887fa].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds;region=europe-west1/55426d5c-262c-4498-8155-7bee2b9887fa?project=273040233392 ].
+
+gcloud builds submit only displays logs from Cloud Storage. To view logs from Cloud Logging, run:
+gcloud beta builds submit
+
+Waiting for build to complete. Polling interval: 1 second(s).
+ID                                    CREATE_TIME                DURATION  SOURCE                                                                                         IMAGES                                                                STATUS
+55426d5c-262c-4498-8155-7bee2b9887fa  2026-09-27T11:55:15+00:00  2M17S     gs://claude-code-507112-csd-ea506f/src/1790510114.641228-7a26e5aa10c94a30a440a732f00fd6bb.tgz  europe-west1-docker.pkg.dev/claude-code-507112/apps/quote:bad-125507  SUCCESS
+[1;32m✔ europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:54573ec684974d5f14d89821c9f91a0ae99db45d51072187eeb63d938f88b115[0m
+
+[1;34m==> 2/5 Release -> staging[0m
+Creating temporary archive of %s file(s) totalling %s before compression. 3 1.6 KiB
+Uploading tarball of [/var/folders/8_/rppxd76s57v02nqlc1yz1vdh0000gn/T/tmp.SKypi9oy5r] to [gs://claude-code-507112-csd-ea506f/deploy-src/1790510274.027628-982a784efd2145f9b82248275f556f4b.tgz]
+Waiting for operation [operation-1790510274610-65c75a8e2865d-692f89a3-3e9f648c]...
+.....done.
+Created Cloud Deploy release rel-260927-125751.
+Creating rollout projects/claude-code-507112/locations/europe-west1/deliveryPipelines/quote/releases/rel-260927-125751/rollouts/rel-260927-125751-to-staging-0001 in target staging
+Waiting for rollout creation operation to complete...
+.....done.
+[1;32m✔ rollout rel-260927-125751-to-staging-0001 is SUCCEEDED[0m
+
+[1;34m==> 3/5 Promote -> approve -> prod canary 25 %[0m
+
+Creating rollout projects/claude-code-507112/locations/europe-west1/deliveryPipelines/quote/releases/rel-260927-125751/rollouts/rel-260927-125751-to-prod-0001 in target prod
+Waiting for rollout creation operation to complete...
+.....done.
+The rollout is pending approval.
+[1;32m✔ rollout rel-260927-125751-to-prod-0001 is PENDING_APPROVAL[0m
+Approving rollout rel-260927-125751-to-prod-0001 from rel-260927-125751 to target prod.
+
+
+[1;32m✔ approved rel-260927-125751-to-prod-0001[0m
+TRAFFIC_AT_CANARY 75:quote-prod-mujrb6xi 25:quote-prod-mujrl647
+CANARY_SAMPLE {"200 v2-124026": 78, "500 -": 16, "200 bad-125507": 6}
+
+[1;34m==> 4/5 Detect and roll back (cancel the bad rollout, redeploy the previous good release)[0m
+.....done.
+The rollout is pending approval.
+ROLLBACK_ROLLOUT rel-260927-125005-to-prod-0002
+Approving rollout rel-260927-125005-to-prod-0002 from rel-260927-125005 to target prod.
+
+
+[1;32m✔ approved rollback rel-260927-125005-to-prod-0002[0m
+ROLLBACK_STATE SUCCEEDED
+
+[1;34m==> 5/5 Verify[0m
+TRAFFIC_AFTER 100:quote-prod-mujrb6xi
+AFTER_SAMPLE {"200 v2-124026": 60}
+BAD_RELEASE rel-260927-125751

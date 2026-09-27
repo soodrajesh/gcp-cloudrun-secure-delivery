@@ -1,0 +1,35 @@
+$ ./scripts/build.sh --vuln-demo   # bakes in PyYAML 5.3, CVE-2020-14343 (CRITICAL, fixed in 5.4)
+(build exit code: 1)
+
+$ # from the 'scan' step of build 77f1d439-52db-4cd1-859d-61d9220e78ad
+Starting Step #3 - "scan"
+Digest: sha256:b88012e2a0a309d6a8a00463d4e63e5e513377fb74eccbc8f9b0f8f81940ebeb
+Status: Downloaded newer image for ghcr.io/aquasecurity/trivy:0.58.0
+ghcr.io/aquasecurity/trivy:0.58.0
+SBOM: 118 components
+2026-09-27T12:02:11Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-09-27T12:02:12Z	INFO	[python] License acquired from METADATA classifiers may be subject to additional terms	name="gunicorn" version="23.0.0"
+2026-09-27T12:02:12Z	INFO	[python] License acquired from METADATA classifiers may be subject to additional terms	name="PyYAML" version="5.3"
+2026-09-27T12:02:12Z	INFO	Detected OS	family="debian" version="13.7"
+2026-09-27T12:02:12Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=87
+2026-09-27T12:02:12Z	INFO	Number of language-specific files	num=1
+2026-09-27T12:02:12Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-09-27T12:02:12Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://aquasecurity.github.io/trivy/v0.58/docs/scanner/vulnerability#severity-selection for details.
+2026-09-27T12:02:12Z	INFO	Table result includes only package filenames. Use '--format json' option to get the full path to the package file.
+/workspace/image.tar (debian 13.7)
+==================================
+Total: 0 (CRITICAL: 0)
+Python (python-pkg)
+===================
+Total: 2 (CRITICAL: 2)
+┌───────────────────┬────────────────┬──────────┬────────┬───────────────────┬───────────────┬─────────────────────────────────────────────┐
+│      Library      │ Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version │                    Title                    │
+├───────────────────┼────────────────┼──────────┼────────┼───────────────────┼───────────────┼─────────────────────────────────────────────┤
+│ PyYAML (METADATA) │ CVE-2020-14343 │ CRITICAL │ fixed  │ 5.3               │ 5.4           │ PyYAML: incomplete fix for CVE-2020-1747    │
+│                   │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2020-14343  │
+│                   ├────────────────┤          │        │                   ├───────────────┼─────────────────────────────────────────────┤
+│                   │ CVE-2020-1747  │          │        │                   │ 5.3.1         │ PyYAML: arbitrary command execution through │
+│                   │                │          │        │                   │               │ python/object/new when FullLoader is used   │
+│                   │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2020-1747   │
+└───────────────────┴────────────────┴──────────┴────────┴───────────────────┴───────────────┴─────────────────────────────────────────────┘
+Finished Step #3 - "scan"

@@ -1,0 +1,68 @@
+# Secure build: test -> build -> SBOM + VULNERABILITY GATE -> push -> attest (built, scan-passed).
+# The gate runs on the LOCAL image tarball BEFORE the push: a failing image is never published, so it
+# can never be attested or deployed. Attestations are signed with KMS-held keys (private keys never leave Google).
+substitutions:
+  _REPO: ""              # <region>-docker.pkg.dev/<project>/apps
+  _TAG: dev
+  _ERROR_RATE: "0"       # >0 builds a deliberately faulty release (canary drill)
+  _VULN_DEMO: "false"    # true bakes in PyYAML 5.3 (CRITICAL) to show the gate blocking a build
+  _BUCKET: ""
+  _KMS_LOCATION: europe-west1
+  _KMS_KEYRING: ""
+  _KMS_VERSION: "1"
+
+steps:
+  - id: test
+    name: python:3.13-slim
+    entrypoint: bash
+    args: [-c, "pip install -q -r app/requirements-dev.txt && pytest -q"]
+
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: [build, --build-arg, "APP_VERSION=${_TAG}", --build-arg, "ERROR_RATE=${_ERROR_RATE}", --build-arg, "VULN_DEMO=${_VULN_DEMO}",
+           -t, "${_REPO}/quote:${_TAG}", app]
+
+  - id: save
+    name: gcr.io/cloud-builders/docker
+    args: [save, "${_REPO}/quote:${_TAG}", -o, /workspace/image.tar]
+
+  # one step: SBOM and gate share a container (each Cloud Build step is a fresh one)
+  - id: scan
+    name: ghcr.io/aquasecurity/trivy:0.58.0
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        set -eu
+        trivy image --input /workspace/image.tar --format cyclonedx --output /workspace/sbom.cdx.json --quiet
+        echo "SBOM: $(grep -c '"bom-ref"' /workspace/sbom.cdx.json) components"
+        # the GATE: fail on any CRITICAL vulnerability that has a fix available
+        trivy image --input /workspace/image.tar --severity CRITICAL --ignore-unfixed --exit-code 1 --no-progress
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: [push, "${_REPO}/quote:${_TAG}"]
+
+  - id: attest
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -eu
+        DIGEST=$(gcloud artifacts docker images describe "${_REPO}/quote:${_TAG}" --format='get(image_summary.digest)')
+        for A in built-by-pipeline scan-passed; do
+          gcloud beta container binauthz attestations sign-and-create \
+            --artifact-url="${_REPO}/quote@$$DIGEST" --attestor="$$A" --attestor-project="${PROJECT_ID}" \
+            --keyversion-project="${PROJECT_ID}" --keyversion-location="${_KMS_LOCATION}" \
+            --keyversion-keyring="${_KMS_KEYRING}" --keyversion-key="$$A" --keyversion="${_KMS_VERSION}"
+        done
+        gcloud storage cp /workspace/sbom.cdx.json "gs://${_BUCKET}/sbom/$${DIGEST#sha256:}.cdx.json"
+        echo "attested (built-by-pipeline, scan-passed) and stored SBOM for ${_REPO}/quote@$$DIGEST"
+
+# declared so Cloud Build attests SLSA provenance for it (already pushed above, so this is a no-op push)
+images: ["${_REPO}/quote:${_TAG}"]
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  requestedVerifyOption: VERIFIED   # SLSA build provenance

@@ -1,0 +1,15 @@
+$ gcloud deploy delivery-pipelines describe quote --region europe-west1 --project claude-code-507112 --format='value(serialPipeline.stages[].targetId,serialPipeline.stages[].strategy.canary.canaryDeployment.percentages)'
+	
+
+$ gcloud container binauthz policy export --project claude-code-507112
+defaultAdmissionRule:
+  enforcementMode: ENFORCED_BLOCK_AND_AUDIT_LOG
+  evaluationMode: REQUIRE_ATTESTATION
+  requireAttestationsBy:
+  - projects/claude-code-507112/attestors/scan-passed
+  - projects/claude-code-507112/attestors/built-by-pipeline
+etag: '"A8vQl21JyEDS"'
+globalPolicyEvaluationMode: ENABLE
+name: projects/claude-code-507112/policy
+updateTime: '2026-09-27T04:53:13.188127Z'
+

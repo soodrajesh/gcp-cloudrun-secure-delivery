@@ -1,0 +1,17 @@
+# Cloud Deploy renders with this file. No build section: the image is built, gated and signed in Cloud Build
+# and injected BY DIGEST at release time (gcloud deploy releases create --images quote=<digest ref>).
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: quote
+profiles:
+  - name: staging
+    manifests:
+      rawYaml: [run-staging.yaml]
+    deploy:
+      cloudrun: {}
+  - name: prod
+    manifests:
+      rawYaml: [run-prod.yaml]
+    deploy:
+      cloudrun: {}

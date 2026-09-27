@@ -1,0 +1,26 @@
+$ # unattended canary: approved once, then watched with no manual intervention
+$ # release rel-260927-072522, target prod, soak = 60s per phase
+
+07:26:41 traffic=100:quote-prod-mujf8v1t phases=IN_PROGRESS PENDING PENDING
+07:26:53 traffic=100:quote-prod-mujf8v1t phases=IN_PROGRESS PENDING PENDING
+07:27:05 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=IN_PROGRESS PENDING PENDING
+07:27:18 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED PENDING PENDING
+07:27:31 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED PENDING PENDING
+07:27:43 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED PENDING PENDING
+07:27:56 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED PENDING PENDING
+07:28:08 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED PENDING PENDING
+07:28:20 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED IN_PROGRESS PENDING
+07:28:33 traffic=75:quote-prod-mujf8v1t 25:quote-prod-mujfpl8m phases=SUCCEEDED IN_PROGRESS PENDING
+07:28:46 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED IN_PROGRESS PENDING
+07:28:58 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED PENDING
+07:29:11 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED PENDING
+07:29:23 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED PENDING
+07:29:36 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED PENDING
+07:29:48 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED PENDING
+07:30:00 traffic=50:quote-prod-mujf8v1t 50:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED IN_PROGRESS
+07:30:13 traffic=100:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED IN_PROGRESS
+07:30:26 traffic=100:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED SUCCEEDED
+07:30:38 traffic=100:quote-prod-mujfpl8m phases=SUCCEEDED SUCCEEDED SUCCEEDED
+
+$ gcloud deploy rollouts describe rel-260927-072522-to-prod-0001 --format='value(state)'
+SUCCEEDED

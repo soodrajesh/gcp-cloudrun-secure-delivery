@@ -1,0 +1,22 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: quote-__ENV__
+  annotations:
+    run.googleapis.com/binary-authorization: default   # enforce the project's attestation policy on every revision
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "4"
+    spec:
+      serviceAccountName: csd-app@__PROJECT__.iam.gserviceaccount.com
+      containers:
+        - image: quote
+          env:
+            - name: ENVIRONMENT
+              value: __ENV__
+          resources:
+            limits:
+              cpu: "1"
+              memory: 256Mi

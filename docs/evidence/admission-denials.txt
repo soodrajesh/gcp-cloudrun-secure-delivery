@@ -1,0 +1,12 @@
+$ gcloud run deploy rogue --image <none-attested image>
+ERROR: (gcloud.run.deploy) Container image 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:5072ce7f8d119386880e7c35b3bfe5471b665e2a6d717a72a3d974ce4e3e682b' is not authorized by policy. 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:5072ce7f8d119386880e7c35b3bfe5471b665e2a6d717a72a3d974ce4e3e682b' : Image europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:5072ce7f8d119386880e7c35b3bfe5471b665e2a6d717a72a3d974ce4e3e682b denied by attestor projects/claude-code-507112/attestors/scan-passed: No attestations found that were valid and signed by a key trusted by the attestor
+
+$ gcloud run deploy rogue --image <built-attested image>
+ERROR: (gcloud.run.deploy) Container image 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:9ecba7a900f157115a67179dc5bf211d683c876d8787c2646d8d1bc26ba8ce0f' is not authorized by policy. 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:9ecba7a900f157115a67179dc5bf211d683c876d8787c2646d8d1bc26ba8ce0f' : Image europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:9ecba7a900f157115a67179dc5bf211d683c876d8787c2646d8d1bc26ba8ce0f denied by attestor projects/claude-code-507112/attestors/scan-passed: No attestations found that were valid and signed by a key trusted by the attestor
+
+$ gcloud run deploy rogue --image <scan-attested image>
+ERROR: (gcloud.run.deploy) Revision 'rogue-00003-6kj' is not ready and cannot serve traffic. Container image 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:76973a0948727ef453d7ae47abddb4a2bfecf4ebb8b3097b7c0214a5856189b8' is not authorized by policy. 'europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:76973a0948727ef453d7ae47abddb4a2bfecf4ebb8b3097b7c0214a5856189b8' : Image europe-west1-docker.pkg.dev/claude-code-507112/apps/quote@sha256:76973a0948727ef453d7ae47abddb4a2bfecf4ebb8b3097b7c0214a5856189b8 denied by attestor projects/claude-code-507112/attestors/built-by-pipeline: No attestations found that were valid and signed by a key trusted by the attestor
+
+$ gcloud run deploy rogue --image <the pipeline's image, both attestations>
+Service URL: https://rogue-273040233392.europe-west1.run.app
+Proxy locally with: gcloud run services proxy rogue --region europe-west1 --project claude-code-507112
